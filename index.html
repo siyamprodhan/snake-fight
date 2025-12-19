@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Fight - Offline PvP</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    </style>
+    <script type="importmap">
+        {
+          "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+          }
+        }
+    </script>
+</head>
+
+<body>
+    <!-- Main Menu Overlay -->
+    <div id="main-menu">
+        <h1 class="title">SNAKE FIGHT</h1>
+
+        <div class="menu-group">
+            <label>Mode:</label>
+            <div class="toggle-group">
+                <button id="btn-offline" class="mode-btn active">OFFLINE</button>
+                <button id="btn-online" class="mode-btn">ONLINE</button>
+            </div>
+
+            <!-- Online Room Controls -->
+            <div id="online-controls" class="menu-group hidden" style="margin-top: 20px;">
+                <label>ROOM CODE</label>
+                <div class="score-input-group">
+                    <input type="text" id="room-code" placeholder="ENTER CODE" class="neu-input"
+                        style="width: 150px; text-transform: uppercase;">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button id="btn-create-room" class="neu-btn" style="font-size: 0.8rem; padding: 10px;">HOST</button>
+                    <button id="btn-join-room" class="neu-btn" style="font-size: 0.8rem; padding: 10px;">JOIN</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="menu-group">
+            <label>DIFFICULTY</label>
+            <div class="toggle-group difficulty-selector">
+                <button class="diff-btn active" data-value="1">EASY</button>
+                <button class="diff-btn" data-value="2">MEDIUM</button>
+                <button class="diff-btn" data-value="4">HARD</button>
+            </div>
+        </div>
+
+        <div class="menu-group">
+            <label>WIN SCORE</label>
+            <div class="score-input-group">
+                <button id="score-minus" class="adjust-btn">-</button>
+                <input type="number" id="target-score" value="50" min="10" max="999" class="neu-input" readonly>
+                <button id="score-plus" class="adjust-btn">+</button>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button id="btn-start" class="neu-btn primary">START GAME</button>
+            <button id="btn-settings" class="neu-btn">SETTINGS</button>
+        </div>
+    </div>
+
+    <!-- Host Lobby -->
+    <div id="host-lobby" class="hidden" style="
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.9); z-index: 20;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+    ">
+        <h2 style="color: var(--text-dim); margin-bottom: 20px;">ROOM CODE</h2>
+        <div id="lobby-room-code" style="
+            font-size: 3rem; color: var(--primary); 
+            text-shadow: var(--glow-primary); margin-bottom: 40px;
+            font-family: 'Courier New', monospace; letter-spacing: 5px;
+        "></div>
+
+        <div id="lobby-status" style="font-size: 1.5rem; color: #fff; margin-bottom: 30px;">
+            Waiting for Player 2...
+        </div>
+
+        <button id="btn-lets-play" class="neu-btn hidden" style="
+            font-size: 1.5rem; padding: 15px 40px; 
+            border-color: var(--accent); color: var(--accent);
+            box-shadow: var(--glow-secondary);
+        ">LET'S PLAY >></button>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="hidden">
+        <div class="modal-content neu-card">
+            <h2>CONTROLS</h2>
+
+            <div class="controls-container">
+                <!-- Player 1 -->
+                <div class="control-group">
+                    <h3>PLAYER 1</h3>
+                    <div class="key-grid">
+                        <div class="key-wrapper area-up">
+                            <label>Up</label>
+                            <input type="text" id="p1-up" value="KeyW" readonly class="neu-input">
+                        </div>
+                        <div class="key-wrapper area-left">
+                            <label>Left</label>
+                            <input type="text" id="p1-left" value="KeyA" readonly class="neu-input">
+                        </div>
+                        <div class="key-wrapper area-down">
+                            <label>Down</label>
+                            <input type="text" id="p1-down" value="KeyS" readonly class="neu-input">
+                        </div>
+                        <div class="key-wrapper area-right">
+                            <label>Right</label>
+                            <input type="text" id="p1-right" value="KeyD" readonly class="neu-input">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Player 2 -->
+                <div class="control-group">
+                    <h3>PLAYER 2</h3>
+                    <div class="key-grid">
+                        <div class="key-wrapper area-up">
+                            <label>Up</label>
+                            <input type="text" id="p2-up" value="ArrowUp" readonly class="neu-input">
+                        </div>
+                        <div class="key-wrapper area-left">
+                            <label>Left</label>
+                            <input type="text" id="p2-left" value="ArrowLeft" readonly class="neu-input">
+                        </div>
+                        <div class="key-wrapper area-down">
+                            <label>Down</label>
+                            <input type="text" id="p2-down" value="ArrowDown" readonly class="neu-input">
+                        </div>
+                        <div class="key-wrapper area-right">
+                            <label>Right</label>
+                            <input type="text" id="p2-right" value="ArrowRight" readonly class="neu-input">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="btn-save-settings" class="neu-btn primary">DONE</button>
+        </div>
+    </div>
+
+    <div id="game-container" class="hidden">
+        <div id="ui-layer">
+            <div class="game-controls">
+                <button id="btn-pause" class="neu-btn icon-btn">||</button>
+                <button id="btn-leave" class="neu-btn icon-btn" style="color: #ff4757;">X</button>
+            </div>
+
+            <div class="score-board">
+                <div class="player-score p1">P1: <span id="score-p1">0</span></div>
+                <div class="timer">Time: <span id="time-remaining">--</span></div>
+                <div class="player-score p2">P2: <span id="score-p2">0</span></div>
+            </div>
+
+            <!-- Room Indication -->
+            <div id="room-display" style="
+                position: absolute; 
+                top: 60px; left: 50%; 
+                transform: translateX(-50%); 
+                color: var(--text-dim); 
+                font-family: 'Courier New', monospace;
+                font-weight: bold;
+                letter-spacing: 2px;
+                text-shadow: 0 0 5px var(--secondary);
+                z-index: 5;
+            "></div>
+
+            <div id="pause-screen" class="hidden">
+                <div class="game-over-card neu-card">
+                    <h1>PAUSED</h1>
+                    <button id="btn-resume" class="neu-btn primary">RESUME</button>
+                    <button id="btn-quit" class="neu-btn">QUIT</button>
+                </div>
+            </div>
+
+            <div id="game-over-screen" class="hidden">
+                <div class="game-over-card neu-card">
+                    <h1>GAME OVER</h1>
+                    <h2 id="winner-text">Player 1 Wins!</h2>
+                    <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px;">
+                        <button id="btn-play-again" class="neu-btn primary">PLAY AGAIN</button>
+                        <button id="btn-exit" class="neu-btn" style="color: #ff4757;">EXIT</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <canvas id="game-canvas" width="800" height="600"></canvas>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="src/main.js"></script>
+</body>
+
+</html>
