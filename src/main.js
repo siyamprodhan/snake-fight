@@ -33,8 +33,14 @@ window.addEventListener('load', async () => {
     let myPlayerId = null; // Store for Host
 
     // Connect Socket
-    try { if (typeof io !== 'undefined') socket = io(); }
-    catch (e) { console.warn('Socket not found'); }
+    // Connect Socket (Only if available)
+    try {
+        if (typeof io !== 'undefined') {
+            socket = io();
+        } else {
+            console.warn('Socket.io client not loaded. Online mode may be limited.');
+        }
+    } catch (e) { console.warn('Socket not found'); }
 
     // Toggle Mode
     btnOffline.addEventListener('click', () => {
@@ -49,7 +55,9 @@ window.addEventListener('load', async () => {
         btnOnline.className = 'mode-btn active';
         btnOffline.className = 'mode-btn';
         onlineControls.classList.remove('hidden');
-        if (!socket) alert("Warning: Server not detected!");
+        if (!socket) {
+            alert("Warning: Game Server not connected! Online play requires a backend server (not supported on standard Vercel hosting).");
+        }
     });
 
     // --- HOST LOBBY LOGIC ---

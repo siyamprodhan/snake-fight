@@ -1,3 +1,7 @@
+.hidden {
+    display: none !important;
+}
+
 :root {
     --bg-dark: #050510;
     --bg-panel: rgba(15, 15, 30, 0.7);
@@ -312,9 +316,7 @@ canvas {
 }
 
 /* Utilities */
-.hidden {
-    display: none !important;
-}
+
 
 /* Settings Modal */
 #settings-modal {
