@@ -19,8 +19,12 @@ window.addEventListener('load', async () => {
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         if (isLocal) {
             socketUrl = 'http://localhost:3000';
+        } else if (window.location.hostname.includes('vercel.app')) {
+            // Error: On Vercel but no SOCKET_URL provided
+            alert("CONFIGURATION ERROR: You are on Vercel but 'SOCKET_URL' is missing from Environment Variables. Please add it pointing to your Render Backend!");
+            socketUrl = null;
         } else {
-            // Default Monolith
+            // Default Monolith (Render)
             socketUrl = window.location.origin;
         }
     }
