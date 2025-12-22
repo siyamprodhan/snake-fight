@@ -63,15 +63,15 @@ window.addEventListener('load', async () => {
     // Toggle Mode
     btnOffline.addEventListener('click', () => {
         mode = 'offline';
-        btnOffline.className = 'mode-btn active';
-        btnOnline.className = 'mode-btn';
+        btnOffline.classList.add('active');
+        btnOnline.classList.remove('active');
         onlineControls.classList.add('hidden');
     });
 
     btnOnline.addEventListener('click', () => {
         mode = 'online';
-        btnOnline.className = 'mode-btn active';
-        btnOffline.className = 'mode-btn';
+        btnOnline.classList.add('active');
+        btnOffline.classList.remove('active');
         onlineControls.classList.remove('hidden');
         if (!socket) {
             alert("Warning: Game Server not connected! Online play requires a backend server (not supported on standard Vercel hosting).");
