@@ -22,12 +22,12 @@ const io = new Server(httpServer, {
     }
 });
 
-// Serve static files from current directory
-app.use(express.static(__dirname));
+// Serve static files from 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Basic route
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Firebase Config Endpoint
