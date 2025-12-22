@@ -53,8 +53,8 @@ window.addEventListener('load', async () => {
     // Connect Socket
     try {
         if (typeof io !== 'undefined') {
-            socket = io(serverUrl);
-            console.log("Connecting to:", serverUrl);
+            socket = io(socketUrl);
+            console.log("Connecting to:", socketUrl);
         } else {
             console.warn('Socket.io client not loaded. Online mode may be limited.');
         }
