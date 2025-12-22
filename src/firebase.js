@@ -13,9 +13,9 @@ import {
 let app;
 let db;
 
-async function initFirebase() {
+async function initFirebase(baseUrl = '') {
     try {
-        const res = await fetch('/api/config');
+        const res = await fetch(`${baseUrl}/api/config`);
         const config = await res.json();
 
         if (!config.apiKey || config.apiKey.includes('Your-Actual-Api-Key')) {

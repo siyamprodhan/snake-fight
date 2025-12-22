@@ -6,11 +6,14 @@ import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import ServerGame from './server/ServerGame.js';
+import cors from 'cors';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.use(cors());
+
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {

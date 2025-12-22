@@ -2,7 +2,24 @@ import Game from './Game.js';
 import { initFirebase, db, doc, setDoc, getDoc, updateDoc, onSnapshot } from './firebase.js';
 
 window.addEventListener('load', async () => {
-    const firebaseReady = await initFirebase();
+    // 1. Determine Server URL first
+    // 1. Determine Server URL logic
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+    let serverUrl;
+    if (isLocal) {
+        serverUrl = 'http://localhost:3000';
+    } else if (window.location.hostname.includes('vercel.app')) {
+        // If hosted on Vercel, point to the separate Backend URL
+        serverUrl = 'https://snake-fight-backend.onrender.com';
+    } else {
+        // Monolith Mode (e.g. hosted on Render directly) - behaves like localhost
+        serverUrl = window.location.origin;
+    }
+
+    // 2. Initialize Firebase with Server URL (for config fetch)
+    const firebaseReady = await initFirebase(serverUrl);
+
     // UI References
     const mainMenu = document.getElementById('main-menu');
     const gameContainer = document.getElementById('game-container');
@@ -33,14 +50,15 @@ window.addEventListener('load', async () => {
     let myPlayerId = null; // Store for Host
 
     // Connect Socket
-    // Connect Socket (Only if available)
+    // Connect Socket
     try {
         if (typeof io !== 'undefined') {
-            socket = io();
+            socket = io(serverUrl);
+            console.log("Connecting to:", serverUrl);
         } else {
             console.warn('Socket.io client not loaded. Online mode may be limited.');
         }
-    } catch (e) { console.warn('Socket not found'); }
+    } catch (e) { console.warn('Socket init error:', e); }
 
     // Toggle Mode
     btnOffline.addEventListener('click', () => {

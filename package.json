@@ -1,5 +1,5 @@
 {
-  "name": "new-folder-(4)",
+  "name": "snake-fight-game",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
@@ -16,7 +16,8 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "firebase": "^12.7.0",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "cors": "^2.8.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"

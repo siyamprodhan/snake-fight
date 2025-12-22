@@ -75,6 +75,41 @@ h1.title {
     align-items: center;
 }
 
+/* Host Lobby */
+#host-lobby {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Online Controls */
+#online-controls {
+    margin-top: 20px;
+    /* Hidden logic handled by .hidden class */
+}
+
+/* Room Display */
+#room-display {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--text-dim);
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-shadow: 0 0 5px var(--secondary);
+    z-index: 5;
+}
+
 .menu-group {
     display: flex;
     flex-direction: column;
