@@ -26,10 +26,10 @@ async function initFirebase(baseUrl = '') {
         app = initializeApp(config);
         db = getFirestore(app);
         console.log("Firebase Initialized");
-        return true;
+        return config; // Return config for other uses (like socketUrl)
     } catch (e) {
         console.error("Error initializing Firebase:", e);
-        return false;
+        return null;
     }
 }
 

@@ -1,24 +1,29 @@
 import Game from './Game.js';
 import { initFirebase, db, doc, setDoc, getDoc, updateDoc, onSnapshot } from './firebase.js';
 
+import { io } from "socket.io-client";
+
 window.addEventListener('load', async () => {
-    // 1. Determine Server URL first
-    // 1. Determine Server URL logic
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    // 1. Initialize Firebase & Get Config
+    // This fetches /api/config (Vercel) or server (Local)
+    let config = await initFirebase();
 
-    let serverUrl;
-    if (isLocal) {
-        serverUrl = 'http://localhost:3000';
-    } else if (window.location.hostname.includes('vercel.app')) {
-        // If hosted on Vercel, point to the separate Backend URL
-        serverUrl = 'https://snake-fight-backend.onrender.com';
+    // 2. Determine Socket URL
+    let socketUrl;
+
+    if (config && config.socketUrl) {
+        // Preferred: Use the URL from Environment Variables (set in Vercel/Render)
+        socketUrl = config.socketUrl;
     } else {
-        // Monolith Mode (e.g. hosted on Render directly) - behaves like localhost
-        serverUrl = window.location.origin;
+        // Fallback Logic
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        if (isLocal) {
+            socketUrl = 'http://localhost:3000';
+        } else {
+            // Default Monolith
+            socketUrl = window.location.origin;
+        }
     }
-
-    // 2. Initialize Firebase with Server URL (for config fetch)
-    const firebaseReady = await initFirebase(serverUrl);
 
     // UI References
     const mainMenu = document.getElementById('main-menu');
@@ -49,14 +54,18 @@ window.addEventListener('load', async () => {
     let roomId = null;
     let myPlayerId = null; // Store for Host
 
-    // Connect Socket
-    // Connect Socket
+    // 3. Connect Socket
     try {
-        if (typeof io !== 'undefined') {
+        // 'io' is now imported, so it is defined.
+        if (socketUrl) {
             socket = io(socketUrl);
             console.log("Connecting to:", socketUrl);
+
+            socket.on('connect_error', (err) => {
+                console.error("Socket Connect Error:", err);
+            });
         } else {
-            console.warn('Socket.io client not loaded. Online mode may be limited.');
+            console.warn("No Socket URL determined.");
         }
     } catch (e) { console.warn('Socket init error:', e); }
 
