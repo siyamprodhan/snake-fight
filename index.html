@@ -5,10 +5,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Snake Fight - Offline PvP</title>
-    <link rel="stylesheet" href="style.css">
+    <!-- REMOVED style.css -->
+    <!-- Google Fonts -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     </style>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bg-dark': '#050510',
+                        'bg-panel': 'rgba(15, 15, 30, 0.7)',
+                        'primary': '#00f3ff', // Cyan
+                        'secondary': '#ff00ff', // Magenta
+                        'accent': '#bc13fe',
+                        'text-main': '#fff',
+                        'text-dim': '#8892b0',
+                    },
+                    fontFamily: {
+                        'arcade': ['"Press Start 2P"', 'cursive'],
+                    },
+                    boxShadow: {
+                        'glow-primary': '0 0 10px #00f3ff, 0 0 20px #00f3ff',
+                        'glow-secondary': '0 0 10px #ff00ff, 0 0 20px #ff00ff',
+                    },
+                    dropShadow: {
+                        'text-glow': '0 0 5px rgba(0, 243, 255, 0.8)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom Utilities for things Tailwind can't do easily (e.g. detailed gradients) -->
+    <style>
+        body {
+            background-image:
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        /* CRT Effect */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        /* Custom Scrollbar prevention */
+        body {
+            overflow: hidden;
+        }
+
+        .text-shadow-neon {
+            text-shadow: 3px 3px 0px #ff00ff, -3px -3px 0px #00f3ff;
+        }
+    </style>
+
     <script type="importmap">
         {
           "imports": {
@@ -19,173 +85,257 @@
     </script>
 </head>
 
-<body>
-    <!-- Main Menu Overlay -->
-    <div id="main-menu">
-        <h1 class="title">SNAKE FIGHT</h1>
+<body
+    class="bg-bg-dark text-text-main font-arcade h-screen flex justify-center items-center selection:bg-primary selection:text-black">
 
-        <div class="menu-group">
-            <label>Mode:</label>
-            <div class="toggle-group">
-                <button id="btn-offline" class="mode-btn active">OFFLINE</button>
-                <button id="btn-online" class="mode-btn">ONLINE</button>
+    <!-- Main Menu Overlay -->
+    <div id="main-menu"
+        class="relative z-10 bg-bg-panel backdrop-blur-md p-10 md:p-14 border border-white/10 rounded-xl shadow-[0_0_20px_rgba(0,243,255,0.2)] flex flex-col gap-6 items-center min-w-[320px]">
+        <h1 class="title text-4xl md:text-5xl text-center mb-6 text-shadow-neon">SNAKE FIGHT</h1>
+
+        <!-- Mode Selection -->
+        <div class="w-full flex flex-col gap-2 items-center">
+            <label class="text-primary text-xs tracking-widest uppercase">Mode:</label>
+            <div class="flex border border-text-dim rounded overflow-hidden w-full">
+                <button id="btn-offline"
+                    class="mode-btn flex-1 py-2 text-xs bg-primary text-black shadow-glow-primary transition-all">OFFLINE</button>
+                <button id="btn-online"
+                    class="mode-btn flex-1 py-2 text-xs bg-transparent text-text-dim hover:text-primary transition-all">ONLINE</button>
             </div>
 
             <!-- Online Room Controls -->
-            <div id="online-controls" class="menu-group hidden">
-                <label>ROOM CODE</label>
-                <div class="score-input-group">
-                    <input type="text" id="room-code" placeholder="ENTER CODE" class="neu-input"
-                        style="width: 150px; text-transform: uppercase;">
+            <div id="online-controls" class="hidden w-full flex-col gap-2 mt-4 transition-all">
+                <label class="text-primary text-xs tracking-widest uppercase text-center">ROOM CODE</label>
+                <div class="bg-black/30 p-2 rounded-lg border border-text-dim flex justify-center">
+                    <input type="text" id="room-code" placeholder="ENTER CODE"
+                        class="bg-transparent border-none text-center text-lg w-full outline-none text-white uppercase placeholder:text-text-dim/50">
                 </div>
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button id="btn-create-room" class="neu-btn" style="font-size: 0.8rem; padding: 10px;">HOST</button>
-                    <button id="btn-join-room" class="neu-btn" style="font-size: 0.8rem; padding: 10px;">JOIN</button>
+                <div class="flex gap-2 mt-2 w-full">
+                    <button id="btn-create-room"
+                        class="flex-1 border-2 border-primary text-primary py-2 text-xs uppercase hover:bg-primary hover:text-black hover:shadow-glow-primary transition-all">HOST</button>
+                    <button id="btn-join-room"
+                        class="flex-1 border-2 border-primary text-primary py-2 text-xs uppercase hover:bg-primary hover:text-black hover:shadow-glow-primary transition-all">JOIN</button>
                 </div>
             </div>
         </div>
 
-        <div class="menu-group">
-            <label>DIFFICULTY</label>
-            <div class="toggle-group difficulty-selector">
-                <button class="diff-btn active" data-value="1">EASY</button>
-                <button class="diff-btn" data-value="2">MEDIUM</button>
-                <button class="diff-btn" data-value="4">HARD</button>
+        <!-- Difficulty -->
+        <div class="w-full flex flex-col gap-2 items-center">
+            <label class="text-primary text-xs tracking-widest uppercase">DIFFICULTY</label>
+            <div class="flex border border-text-dim rounded overflow-hidden w-full difficulty-selector">
+                <button
+                    class="diff-btn active flex-1 py-2 text-xs bg-primary text-black shadow-glow-primary transition-all"
+                    data-value="1">EASY</button>
+                <button
+                    class="diff-btn flex-1 py-2 text-xs bg-transparent text-text-dim hover:text-primary transition-all"
+                    data-value="2">MED</button>
+                <button
+                    class="diff-btn flex-1 py-2 text-xs bg-transparent text-text-dim hover:text-primary transition-all"
+                    data-value="4">HARD</button>
             </div>
         </div>
 
-        <div class="menu-group">
-            <label>WIN SCORE</label>
-            <div class="score-input-group">
-                <button id="score-minus" class="adjust-btn">-</button>
-                <input type="number" id="target-score" value="50" min="10" max="999" class="neu-input" readonly>
-                <button id="score-plus" class="adjust-btn">+</button>
+        <!-- Win Score -->
+        <div class="w-full flex flex-col gap-2 items-center">
+            <label class="text-primary text-xs tracking-widest uppercase">WIN SCORE</label>
+            <div class="flex items-center gap-4 bg-black/30 p-2 rounded-lg border border-text-dim">
+                <button id="score-minus"
+                    class="w-8 h-8 border-2 border-primary text-primary rounded flex justify-center items-center hover:bg-primary hover:text-black hover:shadow-glow-primary transition-all">-</button>
+                <input type="number" id="target-score" value="50" min="10" max="999"
+                    class="bg-transparent border-none text-center text-2xl text-secondary drop-shadow-[0_0_10px_rgba(255,0,255,0.8)] outline-none w-20"
+                    readonly>
+                <button id="score-plus"
+                    class="w-8 h-8 border-2 border-primary text-primary rounded flex justify-center items-center hover:bg-primary hover:text-black hover:shadow-glow-primary transition-all">+</button>
             </div>
         </div>
 
-        <div class="actions">
-            <button id="btn-start" class="neu-btn primary">START GAME</button>
-            <button id="btn-settings" class="neu-btn">SETTINGS</button>
+        <!-- Actions -->
+        <div class="flex gap-4 mt-4 w-full">
+            <button id="btn-start"
+                class="flex-1 py-4 border-2 border-secondary text-secondary uppercase shadow-[0_0_10px_rgba(255,0,255,0.2)] hover:bg-secondary hover:text-white hover:shadow-glow-secondary transition-all">START</button>
+            <button id="btn-settings"
+                class="px-4 py-4 border-2 border-primary text-primary uppercase hover:bg-primary hover:text-black hover:shadow-glow-primary transition-all">⚙</button>
         </div>
     </div>
 
     <!-- Host Lobby -->
-    <div id="host-lobby" class="hidden">
-        <h2 style="color: var(--text-dim); margin-bottom: 20px;">ROOM CODE</h2>
-        <div id="lobby-room-code" style="
-            font-size: 3rem; color: var(--primary); 
-            text-shadow: var(--glow-primary); margin-bottom: 40px;
-            font-family: 'Courier New', monospace; letter-spacing: 5px;
-        "></div>
+    <div id="host-lobby" class="hidden absolute inset-0 bg-black/95 z-20 flex flex-col items-center justify-center">
+        <h2 class="text-text-dim mb-4 text-xl">ROOM CODE</h2>
+        <div id="lobby-room-code"
+            class="text-6xl text-primary font-mono tracking-widest drop-shadow-[0_0_10px_rgba(0,243,255,0.8)] mb-10">
+        </div>
 
-        <div id="lobby-status" style="font-size: 1.5rem; color: #fff; margin-bottom: 30px;">
+        <div id="lobby-status" class="text-2xl text-white mb-8 animate-pulse">
             Waiting for Player 2...
         </div>
 
-        <button id="btn-lets-play" class="neu-btn hidden" style="
-            font-size: 1.5rem; padding: 15px 40px; 
-            border-color: var(--accent); color: var(--accent);
-            box-shadow: var(--glow-secondary);
-        ">LET'S PLAY >></button>
+        <button id="btn-lets-play"
+            class="hidden px-10 py-4 text-2xl border-2 border-secondary text-secondary uppercase shadow-glow-secondary hover:bg-secondary hover:text-white transition-all">
+            LET'S PLAY >>
+        </button>
     </div>
 
     <!-- Settings Modal -->
-    <div id="settings-modal" class="hidden">
-        <div class="modal-content neu-card">
-            <h2>CONTROLS</h2>
+    <div id="settings-modal"
+        class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50">
+        <div
+            class="bg-bg-dark border-2 border-primary p-8 shadow-glow-primary flex flex-col gap-6 items-center max-w-2xl w-full mx-4">
+            <h2 class="text-2xl text-primary text-shadow-glow-primary">CONTROLS</h2>
 
-            <div class="controls-container">
+            <div class="flex gap-8 md:gap-16 relative py-4 w-full justify-center">
+                <!-- Divider -->
+                <div class="absolute left-1/2 top-4 bottom-4 w-px bg-white/10 -translate-x-1/2"></div>
+
                 <!-- Player 1 -->
-                <div class="control-group">
-                    <h3>PLAYER 1</h3>
-                    <div class="key-grid">
-                        <div class="key-wrapper area-up">
-                            <label>Up</label>
-                            <input type="text" id="p1-up" value="KeyW" readonly class="neu-input">
+                <div class="flex flex-col items-center flex-1 control-group">
+                    <h3 class="text-primary mb-6 text-center shadow-glow-primary tracking-widest">P1</h3>
+                    <div class="grid grid-cols-3 gap-3 text-center">
+                        <div></div>
+                        <div class="flex flex-col items-center gap-1">
+                            <label class="text-[0.6rem] text-text-dim">UP</label>
+                            <input type="text" id="p1-up" value="KeyW" readonly
+                                class="w-16 p-1 text-center bg-transparent border border-text-dim text-white text-xs cursor-pointer focus:border-primary focus:shadow-glow-primary outline-none">
                         </div>
-                        <div class="key-wrapper area-left">
-                            <label>Left</label>
-                            <input type="text" id="p1-left" value="KeyA" readonly class="neu-input">
+                        <div></div>
+
+                        <div class="flex flex-col items-center gap-1">
+                            <label class="text-[0.6rem] text-text-dim">LEFT</label>
+                            <input type="text" id="p1-left" value="KeyA" readonly
+                                class="w-16 p-1 text-center bg-transparent border border-text-dim text-white text-xs cursor-pointer focus:border-primary focus:shadow-glow-primary outline-none">
                         </div>
-                        <div class="key-wrapper area-down">
-                            <label>Down</label>
-                            <input type="text" id="p1-down" value="KeyS" readonly class="neu-input">
+                        <div class="flex flex-col items-center gap-1">
+                            <label class="text-[0.6rem] text-text-dim">DOWN</label>
+                            <input type="text" id="p1-down" value="KeyS" readonly
+                                class="w-16 p-1 text-center bg-transparent border border-text-dim text-white text-xs cursor-pointer focus:border-primary focus:shadow-glow-primary outline-none">
                         </div>
-                        <div class="key-wrapper area-right">
-                            <label>Right</label>
-                            <input type="text" id="p1-right" value="KeyD" readonly class="neu-input">
+                        <div class="flex flex-col items-center gap-1">
+                            <label class="text-[0.6rem] text-text-dim">RIGHT</label>
+                            <input type="text" id="p1-right" value="KeyD" readonly
+                                class="w-16 p-1 text-center bg-transparent border border-text-dim text-white text-xs cursor-pointer focus:border-primary focus:shadow-glow-primary outline-none">
                         </div>
                     </div>
                 </div>
 
                 <!-- Player 2 -->
-                <div class="control-group">
-                    <h3>PLAYER 2</h3>
-                    <div class="key-grid">
-                        <div class="key-wrapper area-up">
-                            <label>Up</label>
-                            <input type="text" id="p2-up" value="ArrowUp" readonly class="neu-input">
+                <div class="flex flex-col items-center flex-1 control-group">
+                    <h3 class="text-primary mb-6 text-center shadow-glow-primary tracking-widest">P2</h3>
+                    <div class="grid grid-cols-3 gap-3 text-center">
+                        <div></div>
+                        <div class="flex flex-col items-center gap-1">
+                            <label class="text-[0.6rem] text-text-dim">UP</label>
+                            <input type="text" id="p2-up" value="ArrowUp" readonly
+                                class="w-16 p-1 text-center bg-transparent border border-text-dim text-white text-xs cursor-pointer focus:border-primary focus:shadow-glow-primary outline-none">
                         </div>
-                        <div class="key-wrapper area-left">
-                            <label>Left</label>
-                            <input type="text" id="p2-left" value="ArrowLeft" readonly class="neu-input">
+                        <div></div>
+
+                        <div class="flex flex-col items-center gap-1">
+                            <label class="text-[0.6rem] text-text-dim">LEFT</label>
+                            <input type="text" id="p2-left" value="ArrowLeft" readonly
+                                class="w-16 p-1 text-center bg-transparent border border-text-dim text-white text-xs cursor-pointer focus:border-primary focus:shadow-glow-primary outline-none">
                         </div>
-                        <div class="key-wrapper area-down">
-                            <label>Down</label>
-                            <input type="text" id="p2-down" value="ArrowDown" readonly class="neu-input">
+                        <div class="flex flex-col items-center gap-1">
+                            <label class="text-[0.6rem] text-text-dim">DOWN</label>
+                            <input type="text" id="p2-down" value="ArrowDown" readonly
+                                class="w-16 p-1 text-center bg-transparent border border-text-dim text-white text-xs cursor-pointer focus:border-primary focus:shadow-glow-primary outline-none">
                         </div>
-                        <div class="key-wrapper area-right">
-                            <label>Right</label>
-                            <input type="text" id="p2-right" value="ArrowRight" readonly class="neu-input">
+                        <div class="flex flex-col items-center gap-1">
+                            <label class="text-[0.6rem] text-text-dim">RIGHT</label>
+                            <input type="text" id="p2-right" value="ArrowRight" readonly
+                                class="w-16 p-1 text-center bg-transparent border border-text-dim text-white text-xs cursor-pointer focus:border-primary focus:shadow-glow-primary outline-none">
                         </div>
                     </div>
                 </div>
             </div>
 
-            <button id="btn-save-settings" class="neu-btn primary">DONE</button>
+            <button id="btn-save-settings"
+                class="mt-4 px-8 py-3 border-2 border-secondary text-secondary uppercase hover:bg-secondary hover:text-white hover:shadow-glow-secondary transition-all">DONE</button>
         </div>
     </div>
 
-    <div id="game-container" class="hidden">
-        <div id="ui-layer">
-            <div class="game-controls">
-                <button id="btn-pause" class="neu-btn icon-btn">||</button>
-                <button id="btn-leave" class="neu-btn icon-btn" style="color: #ff4757;">X</button>
+    <!-- Game Container -->
+    <div id="game-container" class="hidden relative border-2 border-primary shadow-[0_0_30px_rgba(0,243,255,0.1)]">
+        <div id="ui-layer" class="absolute inset-0 pointer-events-none">
+            <!-- Controls Overlay -->
+            <div class="game-controls absolute bottom-5 right-5 flex gap-4 pointer-events-auto">
+                <button id="btn-pause"
+                    class="w-12 h-12 rounded-full border-2 border-text-dim bg-black/50 text-text-dim flex justify-center items-center text-lg hover:border-primary hover:text-primary hover:shadow-glow-primary transition-all">||</button>
+                <button id="btn-leave"
+                    class="w-12 h-12 rounded-full border-2 border-text-dim bg-black/50 text-[#ff4757] flex justify-center items-center text-lg hover:border-[#ff4757] hover:shadow-[0_0_10px_#ff4757] transition-all">X</button>
             </div>
 
-            <div class="score-board">
-                <div class="player-score p1">P1: <span id="score-p1">0</span></div>
-                <div class="timer">Time: <span id="time-remaining">--</span></div>
-                <div class="player-score p2">P2: <span id="score-p2">0</span></div>
+            <!-- Scoreboard -->
+            <div class="flex justify-between px-10 py-5 text-xl drop-shadow-md">
+                <div class="text-[#ff3333] drop-shadow-[0_0_10px_#ff0000]">P1: <span id="score-p1">0</span></div>
+                <div class="text-white drop-shadow-[0_0_10px_#fff]">Time: <span id="time-remaining">--</span></div>
+                <div class="text-[#00ff00] drop-shadow-[0_0_10px_#00ff00]">P2: <span id="score-p2">0</span></div>
             </div>
 
             <!-- Room Indication -->
-            <div id="room-display"></div>
+            <div id="room-display"
+                class="absolute top-16 left-1/2 -translate-x-1/2 text-text-dim font-mono font-bold tracking-widest drop-shadow-[0_0_5px_rgba(255,0,255,1)] z-10">
+            </div>
 
-            <div id="pause-screen" class="hidden">
-                <div class="game-over-card neu-card">
-                    <h1>PAUSED</h1>
-                    <button id="btn-resume" class="neu-btn primary">RESUME</button>
-                    <button id="btn-quit" class="neu-btn">QUIT</button>
+            <!-- Pause Screen -->
+            <div id="pause-screen"
+                class="hidden absolute inset-0 bg-bg-dark/85 backdrop-blur-sm flex justify-center items-center pointer-events-auto z-50">
+                <div
+                    class="bg-bg-panel/90 border-2 border-secondary p-10 md:p-14 rounded-xl shadow-[0_0_30px_rgba(255,0,255,0.3)] text-center flex flex-col gap-5 animate-[popIn_0.3s_ease-out]">
+                    <h1 class="text-4xl text-secondary shadow-glow-secondary m-0">PAUSED</h1>
+                    <button id="btn-resume"
+                        class="px-8 py-3 border-2 border-secondary text-secondary uppercase hover:bg-secondary hover:text-white hover:shadow-glow-secondary transition-all">RESUME</button>
+                    <button id="btn-quit"
+                        class="px-8 py-3 border-2 border-primary text-primary uppercase hover:bg-primary hover:text-black hover:shadow-glow-primary transition-all">QUIT</button>
                 </div>
             </div>
 
-            <div id="game-over-screen" class="hidden">
-                <div class="game-over-card neu-card">
-                    <h1>GAME OVER</h1>
-                    <h2 id="winner-text">Player 1 Wins!</h2>
-                    <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px;">
-                        <button id="btn-play-again" class="neu-btn primary">PLAY AGAIN</button>
-                        <button id="btn-exit" class="neu-btn" style="color: #ff4757;">EXIT</button>
+            <!-- Game Over Screen -->
+            <div id="game-over-screen"
+                class="hidden absolute inset-0 bg-bg-dark/85 backdrop-blur-sm flex justify-center items-center pointer-events-auto z-50">
+                <div
+                    class="bg-bg-panel/90 border-2 border-secondary p-10 md:p-14 rounded-xl shadow-[0_0_30px_rgba(255,0,255,0.3)] text-center flex flex-col gap-5 animate-[popIn_0.3s_ease-out]">
+                    <h1 class="text-4xl text-secondary shadow-glow-secondary m-0">GAME OVER</h1>
+                    <h2 id="winner-text" class="text-xl text-white mb-4">Player 1 Wins!</h2>
+                    <div class="flex gap-4 justify-center mt-4">
+                        <button id="btn-play-again"
+                            class="px-8 py-3 border-2 border-secondary text-secondary uppercase hover:bg-secondary hover:text-white hover:shadow-glow-secondary transition-all">PLAY
+                            AGAIN</button>
+                        <button id="btn-exit"
+                            class="px-8 py-3 border-2 border-[#ff4757] text-[#ff4757] uppercase hover:bg-[#ff4757] hover:text-white hover:shadow-[0_0_10px_#ff4757] transition-all">EXIT</button>
                     </div>
                 </div>
             </div>
         </div>
-        <canvas id="game-canvas" width="800" height="600"></canvas>
+        <canvas id="game-canvas" width="800" height="600"
+            class="block bg-[radial-gradient(circle_at_center,#1a1a2e_0%,#050510_100%)]"></canvas>
     </div>
 
+    <!-- Scripts -->
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
     <script type="module" src="src/main.js"></script>
+
+    <!-- JS to handle Toggle Visuals that relied on CSS classes -->
+    <script>
+        // Simple helper to attach visual toggle logic since we removed the CSS class logic for 'active'
+        // We will perform this in main.js ideally, but for now we put some bridge logic or ensure manual class mappings
+        // The previous main.js toggled 'active' class. We need to define what .active means in Tailwindland?
+        // Actually, we can just define .active in a style tag or handle it with class replacements.
+        // EASIEST: Just add a small style rule for .active to target the tailwind classes?
+        // NO, we want pure Tailwind.
+        // We will update main.js class assignments in a separate step or just include a utility class:
+    </script>
+    <style>
+        /* Utility for toggle states handled by JS */
+        /* We keep .hidden because Tailwind has it, but existing JS toggles 'active' class on buttons */
+        /* We can map .active to the specific tailwind styles using @apply or just simple CSS overriding */
+
+        .mode-btn.active,
+        .diff-btn.active {
+            background-color: #00f3ff !important;
+            /* primary */
+            color: #000 !important;
+            box-shadow: 0 0 10px #00f3ff, 0 0 20px #00f3ff !important;
+        }
+    </style>
 </body>
 
 </html>
